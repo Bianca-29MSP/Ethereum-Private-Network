@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'ethereum'
+    metrics_path: '/debug/metrics/prometheus'
+    static_configs:
+      - targets: ['miner-1:6060']
+        labels:
+          instance: miner-1
+      - targets: ['miner-2:6060']
+        labels:
+          instance: miner-2
+      - targets: ['miner-3:6060']
+        labels:
+          instance: miner-3
+      - targets: ['miner-4:6060']
+        labels:
+          instance: miner-4
+      - targets: ['miner-5:6060']
+        labels:
+          instance: miner-5
+    scheme: http

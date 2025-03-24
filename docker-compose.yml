@@ -1,0 +1,390 @@
+version: '3'
+
+services:
+  mybootnode:
+    hostname: mybootnode
+    platform: linux/arm64/v8
+    env_file:
+      - .env
+    build:
+      context: .
+      args:
+        - ACCOUNT_PASSWORD=${ACCOUNT_PASSWORD}
+    command: >
+      --nodekeyhex="d8a72d2f214c7813ab24407d550a0fee0262e595e8ab66c2d5c4af4291001b8e"
+      --nodiscover
+      --ipcdisable
+      --networkid=${NETWORK_ID}
+      --netrestrict="192.168.120.0/24"
+    restart: unless-stopped
+    volumes:
+      - ./bootnode-data:/root/.ethereum
+    networks:
+      priv-eth-net:
+        ipv4_address: 192.168.120.2
+    healthcheck:
+      test: ["CMD", "geth", "version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  miner-1:
+    hostname: miner-1
+    platform: linux/arm64/v8
+    env_file:
+      - .env  
+    build:
+      context: .
+      args:
+        - ACCOUNT_PASSWORD=${ACCOUNT_PASSWORD}
+    command: >
+      --bootnodes="enode://2bd6c478d1922fd3f4b99944c5f54ac4a048e2cdbf5f09827a07b62119f2f0e30fc2b4c802818cdfbfd6bf4f36b7ecf5a908b966d1dc16c25fdb2723d9325f67@192.168.120.2:30301"
+      --mine
+      --miner.threads=1
+      --networkid=${NETWORK_ID}
+      --http
+      --http.addr "0.0.0.0"
+      --http.port 8545
+      --http.api "eth,net,web3,personal"
+      --allow-insecure-unlock
+      --unlock 0
+      --password /root/.ethereum/password.txt
+      --netrestrict="192.168.120.0/24"
+      --ipcdisable
+      --txpool.globalslots 5000
+      --txpool.accountslots 100
+      --txpool.globalqueue 10000
+      --txpool.accountqueue 100
+      --verbosity 4
+      --metrics
+      --metrics.addr 0.0.0.0
+      --metrics.port 6060
+    restart: unless-stopped
+    volumes:
+      - ./password.txt:/root/.ethereum/password.txt
+      - ./minerData/miner1:/root/.ethereum   
+    networks:
+      priv-eth-net:
+        ipv4_address: 192.168.120.3
+    ports:
+      - "8545:8545"
+      - "30303:30303"
+      - "6060:6060"
+    depends_on:
+      - mybootnode
+    healthcheck:
+      test: ["CMD", "geth", "--exec", "eth.blockNumber", "attach", "http://localhost:8545"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1'
+        reservations:
+          memory: 1G
+
+  miner-2:
+    hostname: miner-2
+    platform: linux/arm64/v8
+    env_file:
+      - .env
+    build:
+      context: .
+      args:
+        - ACCOUNT_PASSWORD=${ACCOUNT_PASSWORD}
+    command: >
+      --bootnodes="enode://2bd6c478d1922fd3f4b99944c5f54ac4a048e2cdbf5f09827a07b62119f2f0e30fc2b4c802818cdfbfd6bf4f36b7ecf5a908b966d1dc16c25fdb2723d9325f67@192.168.120.2:30301"
+      --mine
+      --miner.threads=1
+      --networkid=${NETWORK_ID}
+      --http
+      --http.addr "0.0.0.0"
+      --http.port 8545
+      --http.api "eth,net,web3,personal"
+      --allow-insecure-unlock
+      --unlock 0
+      --password /root/.ethereum/password.txt
+      --netrestrict="192.168.120.0/24"
+      --ipcdisable
+      --txpool.globalslots 5000
+      --txpool.accountslots 100
+      --txpool.globalqueue 10000
+      --txpool.accountqueue 100
+      --verbosity 4
+      --metrics
+      --metrics.addr 0.0.0.0
+      --metrics.port 6060
+    restart: unless-stopped
+    volumes:
+      - ./password.txt:/root/.ethereum/password.txt
+      - ./minerData/miner2:/root/.ethereum  
+    networks:
+      priv-eth-net:
+        ipv4_address: 192.168.120.4
+    ports:
+      - "8546:8545"
+      - "30304:30303"
+      - "6061:6060"
+    depends_on:
+      - mybootnode
+    healthcheck:
+      test: ["CMD", "geth", "--exec", "eth.blockNumber", "attach", "http://localhost:8545"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1'
+        reservations:
+          memory: 1G
+
+  miner-3:
+    hostname: miner-3
+    platform: linux/arm64/v8
+    env_file:
+      - .env
+    build:
+      context: .
+      args:
+        - ACCOUNT_PASSWORD=${ACCOUNT_PASSWORD}
+    command: >
+      --bootnodes="enode://2bd6c478d1922fd3f4b99944c5f54ac4a048e2cdbf5f09827a07b62119f2f0e30fc2b4c802818cdfbfd6bf4f36b7ecf5a908b966d1dc16c25fdb2723d9325f67@192.168.120.2:30301"
+      --mine
+      --miner.threads=1
+      --networkid=${NETWORK_ID}
+      --http
+      --http.addr "0.0.0.0"
+      --http.port 8545
+      --http.api "eth,net,web3,personal"
+      --allow-insecure-unlock
+      --unlock 0
+      --password /root/.ethereum/password.txt
+      --netrestrict="192.168.120.0/24"
+      --ipcdisable
+      --txpool.globalslots 5000
+      --txpool.accountslots 100
+      --txpool.globalqueue 10000
+      --txpool.accountqueue 100
+      --verbosity 4
+      --metrics
+      --metrics.addr 0.0.0.0
+      --metrics.port 6060
+    restart: unless-stopped
+    volumes:
+      - ./password.txt:/root/.ethereum/password.txt
+      - ./minerData/miner3:/root/.ethereum  
+    networks:
+      priv-eth-net:
+        ipv4_address: 192.168.120.5
+    ports:
+      - "8547:8545"
+      - "30305:30303"
+      - "6062:6060"
+    depends_on:
+      - mybootnode
+    healthcheck:
+      test: ["CMD", "geth", "--exec", "eth.blockNumber", "attach", "http://localhost:8545"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1'
+        reservations:
+          memory: 1G
+
+  miner-4:
+    hostname: miner-4
+    platform: linux/arm64/v8
+    env_file:
+      - .env
+    build:
+      context: .
+      args:
+        - ACCOUNT_PASSWORD=${ACCOUNT_PASSWORD}
+    command: >
+      --bootnodes="enode://2bd6c478d1922fd3f4b99944c5f54ac4a048e2cdbf5f09827a07b62119f2f0e30fc2b4c802818cdfbfd6bf4f36b7ecf5a908b966d1dc16c25fdb2723d9325f67@192.168.120.2:30301"
+      --mine
+      --miner.threads=1
+      --networkid=${NETWORK_ID}
+      --http
+      --http.addr "0.0.0.0"
+      --http.port 8545
+      --http.api "eth,net,web3,personal"
+      --allow-insecure-unlock
+      --unlock 0
+      --password /root/.ethereum/password.txt
+      --netrestrict="192.168.120.0/24"
+      --ipcdisable
+      --txpool.globalslots 5000
+      --txpool.accountslots 100
+      --txpool.globalqueue 10000
+      --txpool.accountqueue 100
+      --verbosity 4
+      --metrics
+      --metrics.addr 0.0.0.0
+      --metrics.port 6060
+    restart: unless-stopped
+    volumes:
+      - ./password.txt:/root/.ethereum/password.txt
+      - ./minerData/miner4:/root/.ethereum  
+    networks:
+      priv-eth-net:
+        ipv4_address: 192.168.120.6
+    ports:
+      - "8548:8545"
+      - "30306:30303"
+      - "6063:6060"
+    depends_on:
+      - mybootnode
+    healthcheck:
+      test: ["CMD", "geth", "--exec", "eth.blockNumber", "attach", "http://localhost:8545"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1'
+        reservations:
+          memory: 1G
+
+  miner-5:
+    hostname: miner-5
+    platform: linux/arm64/v8
+    env_file:
+      - .env
+    build:
+      context: .
+      args:
+        - ACCOUNT_PASSWORD=${ACCOUNT_PASSWORD}
+    command: >
+      --bootnodes="enode://2bd6c478d1922fd3f4b99944c5f54ac4a048e2cdbf5f09827a07b62119f2f0e30fc2b4c802818cdfbfd6bf4f36b7ecf5a908b966d1dc16c25fdb2723d9325f67@192.168.120.2:30301"
+      --mine
+      --miner.threads=1
+      --networkid=${NETWORK_ID}
+      --http
+      --http.addr "0.0.0.0"
+      --http.port 8545
+      --http.api "eth,net,web3,personal"
+      --allow-insecure-unlock
+      --unlock 0
+      --password /root/.ethereum/password.txt
+      --netrestrict="192.168.120.0/24"
+      --ipcdisable
+      --txpool.globalslots 5000
+      --txpool.accountslots 100
+      --txpool.globalqueue 10000
+      --txpool.accountqueue 100
+      --verbosity 4
+      --metrics
+      --metrics.addr 0.0.0.0
+      --metrics.port 6060
+    restart: unless-stopped
+    volumes:
+      - ./password.txt:/root/.ethereum/password.txt
+      - ./minerData/miner5:/root/.ethereum  
+    networks:
+      priv-eth-net:
+        ipv4_address: 192.168.120.7
+    ports:
+      - "8549:8545"
+      - "30307:30303"
+      - "6064:6060"
+    depends_on:
+      - mybootnode
+    healthcheck:
+      test: ["CMD", "geth", "--exec", "eth.blockNumber", "attach", "http://localhost:8545"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1'
+        reservations:
+          memory: 1G
+
+  # Serviço de monitoramento Prometheus
+  monitor:
+    image: prom/prometheus:latest
+    platform: linux/arm64/v8
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    networks:
+      priv-eth-net:
+        ipv4_address: 192.168.120.100
+    depends_on:
+      - miner-1
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+
+  # Serviço Grafana para visualização
+  grafana:
+    image: grafana/grafana:latest
+    platform: linux/arm64/v8
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3000:3000"
+    networks:
+      priv-eth-net:
+        ipv4_address: 192.168.120.101
+    depends_on:
+      - monitor
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+
+networks:
+  priv-eth-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.120.0/24
+
+volumes:
+  prometheus-data:
+  grafana-data:
